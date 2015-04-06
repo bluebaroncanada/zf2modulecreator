@@ -5,18 +5,19 @@
   <vendor email="jenfoong@gmail.com" url="https://github.com/anathan2586/zf2modulecreator">Alan Ng</vendor>
 
   <description><![CDATA[
-      Enter short description for your plugin here.<br>
-      <em>most HTML tags may be used</em>
+      A plugin that creates new module for Zend Framework 2 project
     ]]></description>
 
   <change-notes><![CDATA[
-      Add change notes here.<br>
-      <em>most HTML tags may be used</em>
+      <h2>0.1</h2>
+      <ul>
+        <li>Initial version</li>
+      </ul>
     ]]>
   </change-notes>
 
   <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
-  <idea-version since-build="131"/>
+  <idea-version since-build="138"/>
 
     <depends>com.jetbrains.php</depends>
     <depends>com.intellij.modules.platform</depends>
@@ -34,7 +35,7 @@
   </project-components>
 
   <actions>
-      <action id="ZF2ModuleCreator.NewModule" class="org.anathan.zf2modulecreator.NewModuleAction">
+      <action id="ZF2ModuleCreator.NewModule" icon="ZF2Icons.ZF2" class="org.anathan.zf2modulecreator.NewModuleAction">
           <add-to-group group-id="NewGroup" anchor="last"/>
       </action>
   </actions>
