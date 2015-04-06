@@ -1,0 +1,42 @@
+<idea-plugin version="2">
+  <id>org.anathan.zf2modulecreator</id>
+  <name>ZF2 Module Creator</name>
+  <version>0.1</version>
+  <vendor email="jenfoong@gmail.com" url="https://github.com/anathan2586/zf2modulecreator">Alan Ng</vendor>
+
+  <description><![CDATA[
+      Enter short description for your plugin here.<br>
+      <em>most HTML tags may be used</em>
+    ]]></description>
+
+  <change-notes><![CDATA[
+      Add change notes here.<br>
+      <em>most HTML tags may be used</em>
+    ]]>
+  </change-notes>
+
+  <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
+  <idea-version since-build="131"/>
+
+    <depends>com.jetbrains.php</depends>
+    <depends>com.intellij.modules.platform</depends>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <!-- Add your extensions here -->
+  </extensions>
+
+  <application-components>
+    <!-- Add your application components here -->
+  </application-components>
+
+  <project-components>
+    <!-- Add your project components here -->
+  </project-components>
+
+  <actions>
+      <action id="ZF2ModuleCreator.NewModule" class="org.anathan.zf2modulecreator.NewModuleAction">
+          <add-to-group group-id="NewGroup" anchor="last"/>
+      </action>
+  </actions>
+
+</idea-plugin>
