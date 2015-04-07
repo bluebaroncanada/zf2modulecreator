@@ -3,6 +3,7 @@ package org.anathan.zf2modulecreator;
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.Language;
 import com.intellij.navigation.ItemPresentation;
+import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileTypes.FileTypes;
 import com.intellij.openapi.project.Project;
@@ -28,6 +29,8 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -56,6 +59,110 @@ public class ZF2Util {
 		}
 
 		return true;
+	}
+
+
+	public static void addArrayValueToArrayCreation(@NotNull ArrayCreationExpression arrayCreation, @NotNull String valueText) {
+
+		final Project project = arrayCreation.getProject();
+		final PsiFile psiFile = arrayCreation.getContainingFile();
+
+		final ArrayCreationExpression arrayCreationExpression = arrayCreation;
+		final String newValueText = valueText;
+
+		final Document doc = PsiDocumentManager.getInstance(project).getDocument(psiFile);
+		if (doc == null) {
+			return;
+		}
+		CommandProcessor.getInstance().executeCommand(project, new Runnable() {
+			@Override
+			public void run() {
+
+				PsiElement[] arrayChildren = arrayCreationExpression.getChildren(); // all are Array Values
+
+				if (arrayChildren.length >= 1) {
+					PsiElement lastArrayValue = arrayChildren[arrayChildren.length - 1];
+					PsiElement whitespace = lastArrayValue.getPrevSibling(); // this is the white space before last PhpPsiElement
+					PsiElement newWhiteSpace = null;
+					if (whitespace instanceof PsiWhiteSpace) {
+						newWhiteSpace = PsiElementFactory.SERVICE.getInstance(project).createDummyHolder(whitespace.getText(), PhpTokenTypes.WHITE_SPACE, null);
+					}
+
+					if (lastArrayValue.getNextSibling().getText().equals(",")) {
+
+						PsiElement comma = lastArrayValue.getNextSibling();
+						PsiElement newPsi = PsiElementFactory.SERVICE.getInstance(project).createDummyHolder(newValueText, PhpElementTypes.ARRAY_VALUE, null);
+
+						arrayCreationExpression.addAfter(newPsi, comma);
+
+						if (newWhiteSpace != null) {
+							arrayCreationExpression.addAfter(newWhiteSpace, comma);
+						}
+					} else {
+						PsiElement newComma = PhpPsiElementFactory.createComma(project);
+						PsiElement newPsi = PsiElementFactory.SERVICE.getInstance(project).createDummyHolder(newValueText, PhpElementTypes.ARRAY_VALUE, null);
+
+						arrayCreationExpression.addAfter(newPsi, lastArrayValue);
+
+						if (newWhiteSpace != null) {
+							arrayCreationExpression.addAfter(newWhiteSpace, lastArrayValue);
+						}
+
+						arrayCreationExpression.addAfter(newComma, lastArrayValue);
+					}
+
+				} else {
+
+					PsiElement lastChild = arrayCreationExpression.getLastChild(); // this is either ')' or ']'
+					PsiElement secondLastChild = lastChild.getPrevSibling(); // this is either '('/'[' or whitespace
+
+					PsiElement newWhiteSpace = null;
+					PsiElement openingBrace = null; // this is '('/'['
+					if (secondLastChild instanceof PsiWhiteSpace) {
+						String newSpaceText = secondLastChild.getText();
+						if (!newSpaceText.contains(" ") && !newSpaceText.contains("\t") && newSpaceText.contains("\n")) {
+							newSpaceText += '\t';
+						}
+						newWhiteSpace = PsiElementFactory.SERVICE.getInstance(project).createDummyHolder(newSpaceText, PhpTokenTypes.WHITE_SPACE, null);
+
+						openingBrace = secondLastChild.getPrevSibling();
+					} else {
+						openingBrace = secondLastChild;
+					}
+
+					PsiElement newPsi = PsiElementFactory.SERVICE.getInstance(project).createDummyHolder(newValueText, PhpElementTypes.ARRAY_VALUE, null);
+
+					if (newWhiteSpace != null) {
+
+						arrayCreationExpression.addAfter(newPsi, openingBrace);
+						arrayCreationExpression.addAfter(newWhiteSpace, openingBrace);
+
+						// this doesn't work, because white space will merge, then secondLastChild no longer valid
+//												arrayCreationExpression.addAfter(newWhiteSpace, secondLastChild);
+//												arrayCreationExpression.addAfter(newPsi, secondLastChild);
+
+					} else {
+						arrayCreationExpression.addAfter(newPsi, secondLastChild);
+					}
+				}
+
+				List<VirtualFile> files = new ArrayList<VirtualFile>();
+				VirtualFile vFile = psiFile.getVirtualFile();
+				files.add(vFile);
+				PsiDocumentManager.getInstance(project).reparseFiles(files, false);
+
+				// this does work, but style isn't what I want, array values are in same line
+//				PsiFile myPsiFile = PsiManager.getInstance(project).findFile(vFile);
+//				if (myPsiFile != null) {
+//					//must not change document outside command
+//					CodeStyleManager.getInstance(project).reformat(myPsiFile);
+//				}
+
+//				int i = 0;
+
+			}
+		}, null, null, doc);
+
 	}
 
 	public static void addModuleToAppConfig(@NotNull Project project, @NotNull String moduleName) {
@@ -87,118 +194,8 @@ public class ZF2Util {
 									modulesHash.getValue() instanceof ArrayCreationExpression) {
 
 								ArrayCreationExpression modulesArray = (ArrayCreationExpression)modulesHash.getValue();
-								PhpPsiElement firstPsiChild = modulesArray.getFirstPsiChild();
-								PhpPsiElement currentPsiChild = firstPsiChild;
-								PhpPsiElement lastPsiChild = null;
 
-								while (currentPsiChild != null) {
-									if (currentPsiChild.getFirstPsiChild() != null &&
-											currentPsiChild.getFirstPsiChild() instanceof StringLiteralExpression) {
-										StringLiteralExpression literal = (StringLiteralExpression)currentPsiChild.getFirstPsiChild();
-										if (literal.getContents().equals(moduleName)) {
-											return;
-										}
-
-									}
-
-									if (currentPsiChild.getNextPsiSibling() != null) {
-										lastPsiChild = currentPsiChild;
-									}
-									currentPsiChild = currentPsiChild.getNextPsiSibling();
-								}
-
-//								PhpPsiElement newArrayValue = PhpPsiElementFactory.createExpressionCodeFragment(project, '\'' + moduleName + '\'', modulesArray, true);
-//								PhpPsiElement newStringLiteral = PhpPsiElementFactory.createPhpPsiFromText(project, PhpTokenTypes.STRING_LITERAL_SINGLE_QUOTE, '\'' + moduleName + '\'');
-
-//								newArrayValue.add(newStringLiteral);
-//								modulesArray.getNode().addChild(newArrayValue.getNode());
-//								modulesArray.add(newStringLiteral);
-
-								lastPsiChild = (PhpPsiElement)modulesArray.getLastChild();
-								if (lastPsiChild == null) {
-//									modulesArray.addBefore(newArrayValue, modulesArray.getLastChild());
-
-//									CodeStyleManager.getInstance(project).reformat(modulesArray);
-
-									Document doc = PsiDocumentManager.getInstance(project).getDocument(modulesArray.getContainingFile());
-									if (doc != null) {
-										String modulesArrayText = doc.getText(modulesArray.getTextRange());
-
-										int lastBraceIndex = modulesArrayText.lastIndexOf(')');
-										if (lastBraceIndex >= 0) {
-											int lastLeftBraceIndex = modulesArrayText.lastIndexOf("(", lastBraceIndex);
-											int lastLeftBraceEnd = lastLeftBraceIndex + 1;
-											String insertedText = "    " + "    " + "\'" + moduleName + "\'" + "\r\n";
-											String convertedText = StreamUtil.convertSeparators(insertedText);
-											doc.insertString(lastLeftBraceEnd, convertedText);
-										}
-
-										PsiDocumentManager.getInstance(project).commitDocument(doc);
-									}
-
-								} else {
-//									PsiElement endBrace = modulesArray.getLastChild();
-//									PsiElement[] children1 = modulesArray.getChildren();
-//
-//
-//									PsiElement currentSibling = null;
-//
-//									PsiElement lastComma = null;
-//									while (currentSibling != null) {
-//										if (currentSibling == lastPsiChild) {
-//											lastComma = null;
-//											break;
-//										} else {
-//											if (currentSibling.getText().equals(",")) {
-//												lastComma = currentSibling;
-//												break;
-//											}
-//										}
-//
-//										currentSibling = currentSibling.getPrevSibling();
-//									}
-//
-//									if (lastComma == null) {
-//										PsiElement comma = PhpPsiElementFactory.createComma(project);
-//										modulesArray.addAfter(comma, lastPsiChild);
-//										modulesArray.addBefore(newArrayValue, modulesArray.getLastChild());
-//
-////										CodeStyleManager.getInstance(project).reformat(modulesArray);
-//									} else {
-//										modulesArray.addBefore(newArrayValue, modulesArray.getLastChild());
-//									}
-
-
-									Document doc = PsiDocumentManager.getInstance(project).getDocument(modulesArray.getContainingFile());
-									if (doc != null) {
-										String modulesArrayText = doc.getText(modulesArray.getTextRange());
-
-										int lastBraceIndex = modulesArrayText.lastIndexOf(')');
-										if (lastBraceIndex >= 0) {
-											int lastPsiChildIndex = modulesArrayText.lastIndexOf(lastPsiChild.getText(), lastBraceIndex);
-											int lastPsiChildEnd = lastPsiChildIndex + lastPsiChild.getText().length();
-											String insertedText = "    " + "    " + "\'" + moduleName + "\'" + "\r\n";
-											String convertedText = StreamUtil.convertSeparators(insertedText);
-											doc.insertString(lastPsiChildEnd, convertedText);
-										}
-
-										PsiDocumentManager.getInstance(project).commitDocument(doc);
-									}
-								}
-
-//								CodeStyleManager.getInstance(project).reformat(appConfigPsiFile);
-//								PsiManager.getInstance(project).reloadFromDisk(appConfigPsiFile);
-
-//								PsiManager.getInstance(project).
-//								if (newArrayValue.getPrevSibling() != null) {
-//									CodeStyleManager.getInstance(project).reformatText(appConfigPsiFile, newArrayValue.getPrevSibling().getTextRange().getEndOffset(), newArrayValue.getTextRange().getEndOffset());
-//								} else {
-//									CodeStyleManager.getInstance(project).reformat(appConfigPsiFile, modulesArray.getTextRange().getStartOffset(), newArrayValue.getTextRange().getEndOffset());
-
-//								}
-
-
-								//.insertString(element.getTextRange().getEndOffset(), ",\n'd'"). You can then call PsiDocumentManager.commitDocument(document)
+								addArrayValueToArrayCreation(modulesArray, "\'" + moduleName + "\'");
 
 								return;
 							}
