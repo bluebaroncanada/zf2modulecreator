@@ -13,6 +13,7 @@ return array(
     ),
 
     'controllers' => array(
+
     ),
 
     'service_manager' => array(
@@ -20,6 +21,8 @@ return array(
     ),
 
     'router' => array(
+        'routes' => array(
 
+        ),
     )
 );
