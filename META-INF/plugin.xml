@@ -1,14 +1,27 @@
 <idea-plugin version="2">
   <id>org.anathan.zf2modulecreator</id>
   <name>ZF2 Module Creator</name>
-  <version>0.1</version>
+  <version>0.2</version>
   <vendor email="jenfoong@gmail.com" url="https://github.com/anathan2586/zf2modulecreator">Alan Ng</vendor>
 
   <description><![CDATA[
-      A plugin that creates new module for Zend Framework 2 project
+        A plugin that creates new module for Zend Framework 2 project.<br />
+        <br />
+        It assumes the project structure is of ZendSkeletonApplication.<br />
+        <br />
+        In a ZF2 project, right click on the project view, and choose "New -> Module".<br />
+        <br />
+        Although the plugin name is Module Creator, any suggestion or feedback for more integration is welcome
+      (<a href="https://github.com/anathan2586/zf2modulecreator/">repository</a> or <a href="mailto:jenfoong@gmail.com">email</a>).
     ]]></description>
 
   <change-notes><![CDATA[
+
+      <h2>0.2</h2>
+      <ul>
+        <li>Added sample routes to generated module.config.php</li>
+      </ul>
+
       <h2>0.1</h2>
       <ul>
         <li>Initial version</li>
