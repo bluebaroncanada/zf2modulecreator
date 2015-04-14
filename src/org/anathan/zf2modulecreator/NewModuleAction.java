@@ -61,6 +61,7 @@ public class NewModuleAction extends DumbAwareAction {
 
 	@Override
 	public void actionPerformed(@NotNull AnActionEvent e) {
+
 		final Project project = e.getProject();
 		if (project == null) {
 			return;
@@ -93,10 +94,17 @@ public class NewModuleAction extends DumbAwareAction {
 					VirtualFile newModuleDir = ZF2Util.createDirectory(project, moduleDir, moduleName);
 					if (newModuleDir != null) {
 
+						String innerViewDirName = moduleName.toLowerCase();
+
 						VirtualFile configDir = ZF2Util.createDirectory(project, newModuleDir, "config");
 						if (configDir != null) {
 
 							String configFileContent = ZF2Util.readResourceFileText("/resources/module.config.php");
+
+							if (configFileContent != null) {
+								configFileContent = configFileContent.replace("{MODULE_NAME}", moduleName);
+								configFileContent = configFileContent.replace("{MODULE_SLUG}", innerViewDirName);
+							}
 
 							ZF2Util.createFile(project, configDir, "module.config.php", configFileContent);
 						}
@@ -116,7 +124,7 @@ public class NewModuleAction extends DumbAwareAction {
 						VirtualFile viewDir = ZF2Util.createDirectory(project, newModuleDir, "view");
 						if (viewDir != null) {
 
-							String innerViewDirName = moduleName.toLowerCase();
+
 							ZF2Util.createDirectory(project, viewDir, innerViewDirName);
 						}
 
@@ -131,21 +139,17 @@ public class NewModuleAction extends DumbAwareAction {
 						VirtualFile appConfigFile = projectBaseDir.findFileByRelativePath("config/application.config.php");
 						if (appConfigFile != null) {
 							PsiFile appConfigPsiFile = PsiManager.getInstance(project).findFile(appConfigFile);
-//
-//							AddModuleToConfigAction action = new AddModuleToConfigAction(project, moduleName, appConfigPsiFile);
-//							action.execute();
+
 							Document doc = PsiDocumentManager.getInstance(project).getDocument(appConfigPsiFile);
 							if (doc != null) {
 
 								CommandProcessor.getInstance().executeCommand(project, new Runnable() {
 									@Override
 									public void run() {
-//										CommandProcessor.getInstance().addAffectedDocuments(project, doc);
 										ZF2Util.addModuleToAppConfig(project, moduleName);
 									}
 								}, null, null, doc);
 							}
-//							ZF2Util.addModuleToAppConfig(project, moduleName);
 						}
 
 						if (configDir != null) {

@@ -21,8 +21,32 @@ return array(
     ),
 
     'router' => array(
-        'routes' => array(
-
-        ),
+// Uncomment below to add routes
+//        'routes' => array(
+//            '{MODULE_SLUG}' => array(
+//                'type' => 'Literal',
+//                'options' => array(
+//                    'route' => '/{MODULE_SLUG}',
+//                    'defaults' => array(
+//                        '__NAMESPACE__' => '{MODULE_NAME}\Controller',
+//                        'controller' => '{MODULE_NAME}',
+//                        'action' => 'index',
+//                    )
+//                )
+//            )
+//        ),
+//        'may_terminate' => true,
+//        'child_routes' => array(
+//            'default' => array(
+//                'type' => 'Segment',
+//                'options' => array(
+//                    'route' => '/[:controller[/:action]]',
+//                    'constraints' => array(
+//                        'controller' => '[a-zA-Z][a-zA-Z0-9_-]*',
+//                        'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
+//                    )
+//                )
+//            )
+//        )
     )
 );
