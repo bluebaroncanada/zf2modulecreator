@@ -19,7 +19,7 @@
 
       <h2>0.2.1</h2>
       <ul>
-        <li>Fixed compatibility with PhpStorm</li>
+        <li>Fixed compatibility with PhpStorm 8</li>
       </ul>
 
       <h2>0.2</h2>
