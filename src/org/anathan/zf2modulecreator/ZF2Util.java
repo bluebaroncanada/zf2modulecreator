@@ -21,6 +21,7 @@ import com.intellij.psi.search.SearchScope;
 import com.intellij.util.IncorrectOperationException;
 import com.jetbrains.php.lang.lexer.PhpTokenTypes;
 import com.jetbrains.php.lang.parser.PhpElementTypes;
+import com.jetbrains.php.lang.parser.PhpPsiBuilder;
 import com.jetbrains.php.lang.psi.PhpPsiElementFactory;
 import com.jetbrains.php.lang.psi.elements.*;
 import org.jetbrains.annotations.NonNls;
@@ -85,13 +86,13 @@ public class ZF2Util {
 					PsiElement whitespace = lastArrayValue.getPrevSibling(); // this is the white space before last PhpPsiElement
 					PsiElement newWhiteSpace = null;
 					if (whitespace instanceof PsiWhiteSpace) {
-						newWhiteSpace = PsiElementFactory.SERVICE.getInstance(project).createDummyHolder(whitespace.getText(), PhpTokenTypes.WHITE_SPACE, null);
+						newWhiteSpace = PsiParserFacade.SERVICE.getInstance(project).createWhiteSpaceFromText(whitespace.getText());
 					}
 
 					if (lastArrayValue.getNextSibling().getText().equals(",")) {
 
 						PsiElement comma = lastArrayValue.getNextSibling();
-						PsiElement newPsi = PsiElementFactory.SERVICE.getInstance(project).createDummyHolder(newValueText, PhpElementTypes.ARRAY_VALUE, null);
+						PsiElement newPsi = PhpPsiElementFactory.createFromText(project, StringLiteralExpression.class, newValueText);//JavaPsiFacade.getElementFactory(project).createDummyHolder(newValueText, PhpElementTypes.ARRAY_VALUE, null);
 
 						arrayCreationExpression.addAfter(newPsi, comma);
 
@@ -100,7 +101,7 @@ public class ZF2Util {
 						}
 					} else {
 						PsiElement newComma = PhpPsiElementFactory.createComma(project);
-						PsiElement newPsi = PsiElementFactory.SERVICE.getInstance(project).createDummyHolder(newValueText, PhpElementTypes.ARRAY_VALUE, null);
+						PsiElement newPsi = PhpPsiElementFactory.createFromText(project, StringLiteralExpression.class, newValueText); // assume new value is string literal
 
 						arrayCreationExpression.addAfter(newPsi, lastArrayValue);
 
@@ -123,14 +124,14 @@ public class ZF2Util {
 						if (!newSpaceText.contains(" ") && !newSpaceText.contains("\t") && newSpaceText.contains("\n")) {
 							newSpaceText += '\t';
 						}
-						newWhiteSpace = PsiElementFactory.SERVICE.getInstance(project).createDummyHolder(newSpaceText, PhpTokenTypes.WHITE_SPACE, null);
+						newWhiteSpace = PsiParserFacade.SERVICE.getInstance(project).createWhiteSpaceFromText(newSpaceText);
 
 						openingBrace = secondLastChild.getPrevSibling();
 					} else {
 						openingBrace = secondLastChild;
 					}
 
-					PsiElement newPsi = PsiElementFactory.SERVICE.getInstance(project).createDummyHolder(newValueText, PhpElementTypes.ARRAY_VALUE, null);
+					PsiElement newPsi = PhpPsiElementFactory.createFromText(project, StringLiteralExpression.class, newValueText);
 
 					if (newWhiteSpace != null) {
 
@@ -150,15 +151,6 @@ public class ZF2Util {
 				VirtualFile vFile = psiFile.getVirtualFile();
 				files.add(vFile);
 				PsiDocumentManager.getInstance(project).reparseFiles(files, false);
-
-				// this does work, but style isn't what I want, array values are in same line
-//				PsiFile myPsiFile = PsiManager.getInstance(project).findFile(vFile);
-//				if (myPsiFile != null) {
-//					//must not change document outside command
-//					CodeStyleManager.getInstance(project).reformat(myPsiFile);
-//				}
-
-//				int i = 0;
 
 			}
 		}, null, null, doc);

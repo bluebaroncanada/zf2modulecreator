@@ -24,7 +24,6 @@ import com.intellij.psi.*;
 import com.intellij.util.PlatformIcons;
 import com.jetbrains.php.PhpIcons;
 import com.jetbrains.php.lang.psi.elements.PhpNamedElement;
-import de.espend.idea.php.annotation.util.PhpElementsUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

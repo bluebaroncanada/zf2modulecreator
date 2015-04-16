@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>org.anathan.zf2modulecreator</id>
   <name>ZF2 Module Creator</name>
-  <version>0.2</version>
+  <version>0.2.1</version>
   <vendor email="jenfoong@gmail.com" url="https://github.com/anathan2586/zf2modulecreator">Alan Ng</vendor>
 
   <description><![CDATA[
@@ -16,6 +16,11 @@
     ]]></description>
 
   <change-notes><![CDATA[
+
+      <h2>0.2.1</h2>
+      <ul>
+        <li>Fixed compatibility with PhpStorm</li>
+      </ul>
 
       <h2>0.2</h2>
       <ul>
@@ -34,6 +39,7 @@
 
     <depends>com.jetbrains.php</depends>
     <depends>com.intellij.modules.platform</depends>
+
 
   <extensions defaultExtensionNs="com.intellij">
     <!-- Add your extensions here -->
